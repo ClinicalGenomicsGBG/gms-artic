@@ -89,14 +89,14 @@ process mergeTypingCSVs {
 
 process pangolinTyping {
 
-    publishDir "${params.outdir}/", mode: 'copy', pattern: "${sampleName}.pangolin.csv"
+    publishDir "${params.outdir}/pangolin", mode: 'copy', pattern: "${sampleName}.pangolin.csv"
 
 
     input:
     tuple val(sampleName), path(consensus_fasta)
 
     output:
-    tuple val(sampleName), path("${sampleName}.pangolin.csv")
+    path("${sampleName}.pangolin.csv")
 
     script:
     """
@@ -104,3 +104,20 @@ process pangolinTyping {
     """
 }
 
+process pangolin_concat{
+	publishDir "${params.outdir}/lineage", mode: 'copy'
+	
+	input:
+	file(pangolin_out)
+	
+	output:
+	file("lineage_report.txt")
+	
+	script:
+	"""
+	awk '
+    	FNR==1 && NR!=1 { while (/^taxon/) getline; }
+    	1 {print}
+    	' $pangolin_out  > lineage_report.txt
+	"""
+}

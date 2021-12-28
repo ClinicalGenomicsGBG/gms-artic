@@ -11,7 +11,8 @@ include {readMapping} from '../modules/illumina.nf'
 include {trimPrimerSequences} from '../modules/illumina.nf' 
 include {callVariants} from '../modules/illumina.nf'
 include {makeConsensus} from '../modules/illumina.nf' 
-include {pangolinTyping} from '../modules/typing.nf' 
+include {pangolinTyping} from '../modules/typing.nf'
+include {pangolin_concat} from '../modules/typing.nf' 
 include {cramToFastq} from '../modules/illumina.nf'
 
 include {makeQCCSV} from '../modules/qc.nf'
@@ -114,6 +115,8 @@ workflow sequenceAnalysis {
       writeQCSummaryCSV(qc.header.concat(qc.pass).concat(qc.fail).toList())
       
       pangolinTyping(makeConsensus.out)
+      pangolin_concat(pangolinTyping.out.collect())
+      
 
       collateSamples(qc.pass.map{ it[0] }
                            .join(makeConsensus.out, by: 0)
@@ -128,6 +131,7 @@ workflow sequenceAnalysis {
     emit:
       qc_pass = collateSamples.out
       variants = callVariants.out.variants
+      
 
 }
 
